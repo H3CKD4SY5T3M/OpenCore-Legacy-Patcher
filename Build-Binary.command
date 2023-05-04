@@ -231,11 +231,11 @@ class CreateBinary:
 
         whitelist_files = [
             "com.dortania.opencore-legacy-patcher.auto-patch.plist",
+            "com.dortania.opencore-legacy-patcher.rsr-monitor.plist",
             "entitlements.plist",
             "launcher.sh",
             "OC-Patcher-TUI.icns",
             "OC-Patcher.icns",
-            "Universal-Binaries.dmg",
         ]
 
 
@@ -265,7 +265,7 @@ class CreateBinary:
 
         print("- Downloading required resources...")
         for resource in required_resources:
-            if Path(f"{resource}").exists():
+            if Path(f"./{resource}").exists():
                 if self.args.reset_binaries:
                     print(f"  - Removing old {resource}")
                     # Just to be safe
@@ -273,6 +273,7 @@ class CreateBinary:
                     assert resource not in ("/", "."), "Resource cannot be root"
                     rm_output = subprocess.run(
                         ["rm", "-rf", f"{resource}"],
+                        ["rm", "-rf", f"./{resource}"],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE
                     )
                     if rm_output.returncode != 0:
@@ -326,9 +327,9 @@ class CreateBinary:
         print("  - Generating DMG...")
         dmg_output = subprocess.run([
             'hdiutil', 'create', './payloads.dmg',
-            '-megabytes', '32000',
+            '-megabytes', '32000',  # Overlays can only be as large as the disk image allows
             '-format', 'UDZO', '-ov',
-            '-volname', 'payloads',
+            '-volname', 'OpenCore Patcher Resources (Base)',
             '-fs', 'HFS+',
             '-srcfolder', './payloads',
             '-passphrase', 'password', '-encryption'

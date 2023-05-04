@@ -67,6 +67,7 @@ class PatchSysVolume:
 
         self.skip_root_kmutil_requirement = self.hardware_details["Settings: Supports Auxiliary Cache"]
 
+
     def _init_pathing(self, custom_root_mount_path: Path = None, custom_data_mount_path: Path = None) -> None:
         """
         Initializes the pathing for root volume patching
@@ -846,6 +847,29 @@ class PatchSysVolume:
 
         if Path(self.constants.payload_local_binaries_root_path).exists():
             logging.info("- Local PatcherSupportPkg resources available, continuing...")
+            return True
+
+        if Path(self.constants.payload_local_binaries_root_path_dmg).exists():
+            logging.info("- Local PatcherSupportPkg resources available, mounting...")
+
+            output = subprocess.run(
+                [
+                    "hdiutil", "attach", "-noverify", f"{self.constants.payload_local_binaries_root_path_dmg}",
+                    "-mountpoint", Path(self.constants.payload_path / Path("Universal-Binaries")),
+                    "-nobrowse",
+                    "-shadow", Path(self.constants.payload_path / Path("Universal-Binaries_overlay")),
+                    "-passphrase", "password"
+                ],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            )
+
+            if output.returncode != 0:
+                logging.info("- Failed to mount Universal-Binaries.dmg")
+                logging.info(f"Output: {output.stdout.decode()}")
+                logging.info(f"Return Code: {output.returncode}")
+                return False
+
+            logging.info("- Mounted Universal-Binaries.dmg")
             return True
 
         logging.info("- PatcherSupportPkg resources missing, Patcher likely corrupted!!!")

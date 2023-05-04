@@ -9,12 +9,8 @@ on:
 jobs:
   build:
     name: Validate
-    runs-on: x86_64_mojave
-    if: github.repository_owner == 'dortania'
-    env:
-      branch: ${{ github.ref }}
-      commiturl: ${{ github.event.head_commit.url }}${{ github.event.release.html_url }}
-      commitdate: ${{ github.event.head_commit.timestamp }}${{ github.event.release.published_at }}
+    runs-on: x86_64_monterey
     steps:
       - uses: actions/checkout@v3
-      - run: /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 OpenCore-Patcher-GUI.command --validate
+      - name: Validate
+        run: /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 OpenCore-Patcher-GUI.command --validate

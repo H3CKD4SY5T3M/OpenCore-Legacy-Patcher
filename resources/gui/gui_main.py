@@ -1784,7 +1784,7 @@ class wx_python_gui:
         if model in ["MacPro3,1", "MacPro4,1", "MacPro5,1"]:
             has_legacy_usb = True
             issues_list = "- Lack of Keyboard/Mouse in macOS installer without a USB hub\n"
-        elif model in smbios_data.smbios_dictionary[model]:
+        elif model in smbios_data.smbios_dictionary:
             if "CPU Generation" in smbios_data.smbios_dictionary[model]:
                 if smbios_data.smbios_dictionary[model]["CPU Generation"] <= cpu_data.cpu_data.penryn:
                     has_legacy_usb = True
@@ -2062,7 +2062,17 @@ class wx_python_gui:
             logging.info("Installer(s) found:")
             for app in available_installers:
                 logging.info(f"- {available_installers[app]['Short Name']}: {available_installers[app]['Version']} ({available_installers[app]['Build']})")
-                self.install_selection = wx.Button(self.frame, label=f"{available_installers[app]['Short Name']}: {available_installers[app]['Version']} ({available_installers[app]['Build']})", size=(320, 30))
+
+                app_str = f"{available_installers[app]['Short Name']}"
+                unsupported: bool = available_installers[app]['Minimum Host OS'] > self.constants.detected_os
+
+                if unsupported:
+                    min_str = os_data.os_conversion.convert_kernel_to_marketing_name(available_installers[app]['Minimum Host OS'])
+                    app_str += f" (Requires {min_str})"
+                else:
+                    app_str += f": {available_installers[app]['Version']} ({available_installers[app]['Build']})"
+
+                self.install_selection = wx.Button(self.frame, label=app_str, size=(320, 30))
                 i = i + 25
                 self.install_selection.SetPosition(
                     wx.Point(
@@ -2072,6 +2082,9 @@ class wx_python_gui:
                 )
                 self.install_selection.Bind(wx.EVT_BUTTON, lambda event, temp=app: self.format_usb_menu(available_installers[temp]['Short Name'], available_installers[temp]['Path']))
                 self.install_selection.Centre(wx.HORIZONTAL)
+
+                if unsupported:
+                    self.install_selection.Disable()
         else:
             logging.info("No installers found")
             # Label: No Installers Found
@@ -2101,6 +2114,7 @@ class wx_python_gui:
     def format_usb_menu(self, installer_name, installer_path):
         self.frame.DestroyChildren()
         logging.info(installer_path)
+        self.frame.SetSize(370, -1)
 
         # Header
         self.header = wx.StaticText(self.frame, label="Format USB")
@@ -2173,7 +2187,7 @@ class wx_python_gui:
 
     def format_usb_progress(self, disk, installer_name, installer_path):
         self.frame.DestroyChildren()
-        self.frame.SetSize(500, -1)
+        self.frame.SetSize(520, -1)
         # Header
         self.header = wx.StaticText(self.frame, label=f"Creating Installer: {installer_name}")
         self.header.SetFont(wx.Font(19, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD, False, ".AppleSystemUIFont"))
@@ -2855,13 +2869,25 @@ class wx_python_gui:
             self.set_terascale_accel_checkbox.Disable()
             self.set_terascale_accel_checkbox.SetValue(False)
 
+        # Disable ColorSync Downgrade
+        self.set_colorsync_checkbox = wx.CheckBox(self.frame_modal, label="Disable ColorSync Downgrade")
+        self.set_colorsync_checkbox.SetValue(self.constants.disable_cat_colorsync)
+        self.set_colorsync_checkbox.Bind(wx.EVT_CHECKBOX, self.disable_colorsync_click)
+        self.set_colorsync_checkbox.SetPosition(wx.Point(
+            self.set_terascale_accel_checkbox.GetPosition().x,
+            self.set_terascale_accel_checkbox.GetPosition().y + self.set_terascale_accel_checkbox.GetSize().height))
+        self.set_colorsync_checkbox.SetToolTip(wx.ToolTip("This option will disable the ColorSync patch used on HD 3000 Macs.\nMainly applicable if you need Display Profile functionality"))
+        if self.computer.real_model not in ["MacBookAir4,1","MacBookAir4,2","MacBookPro8,1","MacBookPro8,2","MacBookPro8,3","Macmini5,1"]:
+            self.set_colorsync_checkbox.Disable()
+            self.set_colorsync_checkbox.SetValue(False)
+
         # Windows GMUX
         self.windows_gmux_checkbox = wx.CheckBox(self.frame_modal, label="Windows GMUX")
         self.windows_gmux_checkbox.SetValue(self.constants.dGPU_switch)
         self.windows_gmux_checkbox.Bind(wx.EVT_CHECKBOX, self.windows_gmux_click)
         self.windows_gmux_checkbox.SetPosition(wx.Point(
-            self.set_terascale_accel_checkbox.GetPosition().x,
-            self.set_terascale_accel_checkbox.GetPosition().y + self.set_terascale_accel_checkbox.GetSize().height))
+            self.set_colorsync_checkbox.GetPosition().x,
+            self.set_colorsync_checkbox.GetPosition().y + self.set_colorsync_checkbox.GetSize().height))
         self.windows_gmux_checkbox.SetToolTip(wx.ToolTip("Enable this option to allow usage of the hardware GMUX to switch between Intel and Nvidia/AMD GPUs in Windows."))
 
         # Hibernation Workaround
@@ -3143,6 +3169,16 @@ class wx_python_gui:
             logging.info("TS2 Acceleration Disabled")
             global_settings.GlobalEnviromentSettings().write_property("MacBookPro_TeraScale_2_Accel", False)
             self.constants.allow_ts2_accel = False
+
+    def disable_colorsync_click(self, event=None):
+        if self.set_colorsync_checkbox.GetValue():
+            logging.info("ColorSync Patch Disabled")
+            global_settings.GlobalEnviromentSettings().write_property("Disable_ColorSync_Downgrade", True)
+            self.constants.disable_cat_colorsync = True
+        else:
+            logging.info("ColorSync Patch Enabled")
+            global_settings.GlobalEnviromentSettings().write_property("Disable_ColorSync_Downgrade", False)
+            self.constants.disable_cat_colorsync = False
 
     def force_web_drivers_click(self, event=None):
         if self.force_web_drivers_checkbox.GetValue():

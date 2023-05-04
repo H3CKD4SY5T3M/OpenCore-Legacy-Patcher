@@ -12,8 +12,8 @@ from data import os_data
 class Constants:
     def __init__(self) -> None:
         # Patcher Versioning
-        self.patcher_version:                 str = "0.6.5"  # OpenCore-Legacy-Patcher
-        self.patcher_support_pkg_version:     str = "0.9.6"  # PatcherSupportPkg
+        self.patcher_version:                 str = "0.6.6"  # OpenCore-Legacy-Patcher
+        self.patcher_support_pkg_version:     str = "1.0.0"  # PatcherSupportPkg
         self.copyright_date:                  str = "Copyright © 2020-2023 Dortania"
 
         # URLs
@@ -107,9 +107,9 @@ class Constants:
         self.kdkless_version: str = "1.0.0"
 
         # Get resource path
-        self.current_path: Path = Path(__file__).parent.parent.resolve()
-        self.payload_path: Path = self.current_path / Path("payloads")
-        self.binaries_path: Path = self.current_path / Path("binaries")
+        self.current_path:  Path = Path(__file__).parent.parent.resolve()
+        self.original_path: Path = Path(__file__).parent.parent.resolve()
+        self.payload_path:  Path = self.current_path / Path("payloads")
 
         # Patcher Settings
         ## Internal settings
@@ -212,6 +212,7 @@ class Constants:
         self.set_content_caching:    bool = False  # Set Content Caching
         self.disable_xcpm:           bool = False  # Disable XCPM (X86PlatformPlugin.kext)
         self.set_vmm_cpuid:          bool = False  # Set VMM bit inside CPUID
+        self.disable_cat_colorsync:  bool = False  # Disable the ColorSync patch to regain Display Profiles
         self.set_alc_usage:          bool = True  #  Set AppleALC usage
         self.allow_3rd_party_drives: bool = True  #  Allow ThridPartyDrives quirk
         self.allow_nvme_fixing:      bool = True  #  Allow NVMe Kernel Space Patches
@@ -226,6 +227,17 @@ class Constants:
         ]
 
     # Payload Location
+
+    # Support Disk Images
+    @property
+    def payload_path_dmg(self):
+        return self.original_path / Path("payloads.dmg")
+
+    @property
+    def payload_local_binaries_root_path_dmg(self):
+        return self.original_path / Path("Universal-Binaries.dmg")
+
+
     # OpenCore
     @property
     def opencore_zip_source(self):
@@ -239,6 +251,10 @@ class Constants:
     @property
     def auto_patch_launch_agent_path(self):
         return self.payload_path / Path("com.dortania.opencore-legacy-patcher.auto-patch.plist")
+
+    @property
+    def rsr_monitor_launch_daemon_path(self):
+        return self.payload_path / Path("com.dortania.opencore-legacy-patcher.rsr-monitor.plist")
 
     # ACPI
     @property
@@ -651,10 +667,6 @@ class Constants:
     @property
     def payload_local_binaries_root_path(self):
         return self.binaries_path
-    @property
-    def payload_local_binaries_root_path_dmg(self):
-        return self.current_path / Path("Universal-Binaries.dmg")
-
     @property
     def kdk_download_path(self):
         return self.payload_path / Path("KDK.dmg")
