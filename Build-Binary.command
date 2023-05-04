@@ -272,7 +272,6 @@ class CreateBinary:
                     assert resource, "Resource cannot be empty"
                     assert resource not in ("/", "."), "Resource cannot be root"
                     rm_output = subprocess.run(
-                        ["rm", "-rf", f"{resource}"],
                         ["rm", "-rf", f"./{resource}"],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE
                     )
