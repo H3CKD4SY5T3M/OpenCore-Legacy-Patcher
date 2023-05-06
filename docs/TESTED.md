@@ -47,7 +47,7 @@ To aid users in troubleshooting, we've compiled a list of users who've reported 
 | MacBookPro5,4 | <span style="color:red"> NO </span> | N/A | N/A | N/A | ^^ |
 | MacBookPro5,5 | <span style="color:#30BCD5"> YES </span> | ASentientHedgehog | Stock | - | ^^ |
 | ^^ | ^^ | ParaDoX1994 | Stock | 0.4.5 | Camera/Bluetooth not working (connector broken) |
-| MacBookPro6,1 | <span style="color:red"> NO </span> | N/A | N/A | N/A | N/A |
+| MacBookPro6,1 | <span style="color:#30BCD5"> YES </span> | H4CKD4SY5T3M | Stock | 0.6.5 | iMovie, Plan, Books, FinalCut, Airdrop : bugs/crash |
 | MacBookPro6,2 | <span style="color:#30BCD5"> YES </span> | Jakeluke | Stock | Unknown | dGPU broken |
 | MacBookPro7,1 | ^^ | fussel132 | ^^ | 0.1.2 | N/A
 | ^^ | ^^ | casey1234 | Upgraded | 0.3.3 | Upgraded SSD |
